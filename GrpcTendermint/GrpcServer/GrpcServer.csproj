@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc" Version="2.39.1" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.39.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.39.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="LiteDB" Version="5.0.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Source\Protos\gogoproto\gogo.proto" GrpcServices="Server" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\crypto\keys.proto" GrpcServices="Server" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\crypto\proof.proto" GrpcServices="Server" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\types\block.proto" GrpcServices="Server" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\types\canonical.proto" GrpcServices="Server" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\types\events.proto" GrpcServices="Server" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\types\evidence.proto" GrpcServices="Server" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\types\params.proto" GrpcServices="Server" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\types\types.proto" GrpcServices="Server" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\types\validator.proto" GrpcServices="Server" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\version\types.proto" GrpcServices="Server" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\abci\types.proto" GrpcServices="Server" ProtoRoot="Source/Protos" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Source\Database\" />
+  </ItemGroup>
+
+</Project>

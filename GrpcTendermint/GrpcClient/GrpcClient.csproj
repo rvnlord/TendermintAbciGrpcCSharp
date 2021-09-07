@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Source\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.17.3" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.39.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.39.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Source\Protos\gogoproto\gogo.proto" GrpcServices="Client" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\crypto\keys.proto" GrpcServices="Client" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\crypto\proof.proto" GrpcServices="Client" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\types\block.proto" GrpcServices="Client" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\types\canonical.proto" GrpcServices="Client" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\types\events.proto" GrpcServices="Client" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\types\evidence.proto" GrpcServices="Client" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\types\params.proto" GrpcServices="Client" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\types\types.proto" GrpcServices="Client" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\types\validator.proto" GrpcServices="Client" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\version\types.proto" GrpcServices="Client" ProtoRoot="Source/Protos" />
+    <Protobuf Include="Source\Protos\tendermint\abci\types.proto" GrpcServices="Client" ProtoRoot="Source/Protos" />
+  </ItemGroup>
+
+</Project>
