@@ -2,13 +2,13 @@
 
 This is a `C#` example of a very simple key-value store kept in sync by validators. It is built on top of Tendermint (Cosmos) blockchain. I publish it due to the lack of clarity in official Tendermint documentation on how to run their marvelous piece of software with `C#` (there are no `.NET` examples at the moment). 
 
-### You need to manually apply the following migrations using `Package Manager Console` for the `Db` to be created properly:
+##### You need to manually apply the following migrations using `Package Manager Console` for the `Db` to be created properly:
 ```
 Add-Migration InitialCreate
 Update Database
 ```
 
-### Resetting the migrations:
+##### Resetting the migrations:
 ```
 Update Database 0
 Remove-Migration InitialCreate
