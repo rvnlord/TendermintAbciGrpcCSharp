@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Google.Protobuf;
@@ -6,7 +7,6 @@ using Grpc.Core;
 using GrpcServer.Source.Common.Converters;
 using GrpcServer.Source.Common.Extensions;
 using GrpcServer.Source.Models;
-using LiteDB;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Tendermint.Abci;
@@ -15,18 +15,17 @@ namespace GrpcServer.Source.Services
 {
     public class KVStoreService : ABCIApplication.ABCIApplicationBase
     {
-        private readonly IConfiguration _conf;
         private readonly ILogger<KVStoreService> _logger;
-        private static LiteDatabase _env;
-        private static ILiteCollection<KV> _store;
-        
-        public LiteDatabase Env => _env ??= new LiteDatabase(_conf.GetConnectionString("LiteDb"));
-        public ILiteCollection<KV> Store => _store ??= Env.GetCollection<KV>("kvs");
+        private readonly KvDbContext _db;
+        private readonly IKVStoreCacheService _cache;
+        private readonly IConfiguration _conf;
 
-        public KVStoreService(IConfiguration conf, ILogger<KVStoreService> logger)
+        public KVStoreService(ILogger<KVStoreService> logger, IConfiguration conf, KvDbContext db, IKVStoreCacheService cache)
         {
-            _conf = conf;
             _logger = logger;
+            _conf = conf;
+            _db = db;
+            _cache = cache;
         }
         
         public override Task<ResponseEcho> Echo(RequestEcho request, ServerCallContext context)
@@ -43,29 +42,33 @@ namespace GrpcServer.Source.Services
 
         public override Task<ResponseInitChain> InitChain(RequestInitChain request, ServerCallContext context)
         {
-            Store.EnsureIndex(x => x.Key, true);
             return Task.FromResult(new ResponseInitChain()).LogAsync(_logger, "InitChain Status: Success");
         }
 
         public override Task<ResponseBeginBlock> BeginBlock(RequestBeginBlock request, ServerCallContext context)
         {
-            Env.BeginTrans();
             return Task.FromResult(new ResponseBeginBlock()).LogAsync(_logger, "Begin Block Status: Success");
         }
 
         public override Task<ResponseDeliverTx> DeliverTx(RequestDeliverTx request, ServerCallContext context)
         {
             var (code, kv) = Validate(request.Tx);
-            if (code == 0)
-                Store.Insert(kv);
-            else if (code == 3)
-                Store.Update(kv);
+            if (code.In<uint>(0, 3))
+                _cache.KVs[kv.Key] = kv;
             return Task.FromResult(new ResponseDeliverTx { Code = code.In<uint>(0, 3) ? 0 : code }).LogAsync(_logger, $"Delivery Status: {code switch { 0 => "Success", 1 => "Invalid Data", 2 => "Already Exists", 3 => "Already Exists with Different Value", _ => "Failure" }}");
         }
 
         public override Task<ResponseCommit> Commit(RequestCommit request, ServerCallContext context)
         {
-            Env.Commit(); // timed out waiting for tx to be included in a block
+            while (!_cache.KVs.IsEmpty)
+            {
+                var (key, value) = _cache.KVs.First();
+                _db.KVs.AddOrUpdate(value, k => k.Key);
+                _cache.KVs.Remove(key, out _);
+            }
+
+            _db.SaveChanges();
+            
             return Task.FromResult(new ResponseCommit { Data = ByteString.CopyFrom(new byte[8]) }).LogAsync(_logger, "Commit Status: Success");
         }
 
@@ -83,7 +86,7 @@ namespace GrpcServer.Source.Services
         public override Task<ResponseQuery> Query(RequestQuery request, ServerCallContext context)
         {
             var k = request.Data.ToBase64();
-            var v = Store.FindOne(x => x.Key == k)?.Value;
+            var v = _db.KVs.SingleOrDefault(x => x.Key == k)?.Value;
             var resp = new ResponseQuery();
             if (v == null)
                 resp.Log = $"There is no value for \"{k}\" key";
@@ -103,7 +106,7 @@ namespace GrpcServer.Source.Services
             if (kv.Key.IsNullOrWhiteSpace() || kv.Value.IsNullOrWhiteSpace())
                 return (1, kv); // Invalid data
             
-            var stored = Store.FindOne(x => x.Key == kv.Key)?.Value;
+            var stored = _db.KVs.SingleOrDefault(x => x.Key == kv.Key)?.Value;
             if (stored == null) 
                 return (0, kv); // Not in the Db Yet
             if (stored == kv.Value)
