@@ -5,12 +5,12 @@ This is a `C#` example of a very simple key-value store kept in sync by validato
 #### You need to manually apply the following migrations using `Package Manager Console` for the `Db` to be created properly:
 ```
 Add-Migration InitialCreate
-Update Database
+Update-Database
 ```
 
 #### Resetting the migrations:
 ```
-Update Database 0
+Update-Database 0
 Remove-Migration InitialCreate
 ```
    
